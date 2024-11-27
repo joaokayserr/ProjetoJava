@@ -1,0 +1,1 @@
+O banco de dados usado no código ele é criado automaticamente pela aplicação ao iniciar, graças ao método criarTabelaSeNecessario() na classe ProdutoDAO. E contém o script SQL necessário para criar o banco de dados estoque.db e sua tabela.
