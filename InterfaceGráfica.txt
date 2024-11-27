@@ -1,0 +1,107 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+
+public class ControleEstoqueApp extends JFrame {
+    private ProdutoDAO produtoDAO;
+    private JTextField nomeField, quantidadeField, precoField;
+    private JTextArea produtosArea;
+
+    public ControleEstoqueApp() {
+        produtoDAO = new ProdutoDAO();
+        configurarInterface();
+    }
+
+    private void configurarInterface() {
+        setTitle("Controle de Estoque");
+        setSize(400, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        JPanel painelEntrada = new JPanel(new GridLayout(4, 2));
+        painelEntrada.add(new JLabel("Nome:"));
+        nomeField = new JTextField();
+        painelEntrada.add(nomeField);
+
+        painelEntrada.add(new JLabel("Quantidade:"));
+        quantidadeField = new JTextField();
+        painelEntrada.add(quantidadeField);
+
+        painelEntrada.add(new JLabel("Preço:"));
+        precoField = new JTextField();
+        painelEntrada.add(precoField);
+
+        JButton adicionarButton = new JButton("Adicionar Produto");
+        adicionarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                adicionarProduto();
+            }
+        });
+        painelEntrada.add(adicionarButton);
+
+        add(painelEntrada, BorderLayout.NORTH);
+
+        produtosArea = new JTextArea();
+        produtosArea.setEditable(false);
+        add(new JScrollPane(produtosArea), BorderLayout.CENTER);
+
+        JButton atualizarButton = new JButton("Atualizar Lista");
+        atualizarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listarProdutos();
+            }
+        });
+        add(atualizarButton, BorderLayout.SOUTH);
+
+        listarProdutos();
+    }
+
+    private void adicionarProduto() {
+        String nome = nomeField.getText();
+        int quantidade;
+        double preco;
+
+        try {
+            quantidade = Integer.parseInt(quantidadeField.getText());
+            preco = Double.parseDouble(precoField.getText());
+
+            Produto produto = new Produto();
+            produto.setNome(nome);
+            produto.setQuantidade(quantidade);
+            produto.setPreco(preco);
+
+            produtoDAO.adicionarProduto(produto);
+
+            JOptionPane.showMessageDialog(this, "Produto adicionado com sucesso!");
+            nomeField.setText("");
+            quantidadeField.setText("");
+            precoField.setText("");
+            listarProdutos();
+        } catch (NumberFormatException | SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao adicionar produto: " + e.getMessage());
+        }
+    }
+
+    private void listarProdutos() {
+        try {
+            produtosArea.setText("");
+            for (Produto produto : produtoDAO.listarProdutos()) {
+                produtosArea.append(String.format("ID: %d | Nome: %s | Quantidade: %d | Preço: %.2f%n",
+                        produto.getId(), produto.getNome(), produto.getQuantidade(), produto.getPreco()));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao listar produtos: " + e.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            ControleEstoqueApp app = new ControleEstoqueApp();
+            app.setVisible(true);
+        });
+    }
+}
